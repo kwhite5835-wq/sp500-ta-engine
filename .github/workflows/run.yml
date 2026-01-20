@@ -28,6 +28,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run report
+        env:
+    EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+    EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+    EMAIL_USER: ${{ secrets.EMAIL_USER }}
+    EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+    EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
         run: |
           python sp500_regime_engine.py
 
