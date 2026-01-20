@@ -69,7 +69,9 @@ def fetch_stooq_daily(ticker: str) -> pd.DataFrame:
     url = f"https://stooq.com/q/d/l/?s={ticker.lower()}&i=d"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
-    df = pd.read_csv(pd.compat.StringIO(r.text))
+    from io import StringIO
+    df = pd.read_csv(StringIO(r.text))
+
     # Columns: Date, Open, High, Low, Close, Volume
     df["Date"] = pd.to_datetime(df["Date"])
     df = df.sort_values("Date").reset_index(drop=True)
