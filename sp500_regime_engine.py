@@ -4,6 +4,10 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 import requests
+import os
+import smtplib
+from email.mime.text import MIMEText
+
 
 
 # ------------------------
@@ -179,6 +183,27 @@ def render_markdown(rep: dict) -> str:
     md.append("> Rule: LONG in UPTREND/RANGE; CASH in DOWNTREND. Levels are for timing / risk framing.")
     md.append("")
     return "\n".join(md)
+def send_email(subject: str, body_text: str):
+    host = os.getenv("EMAIL_HOST")
+    port = int(os.getenv("EMAIL_PORT", "587"))
+    user = os.getenv("EMAIL_USER")
+    password = os.getenv("EMAIL_PASS")
+    to_addr = os.getenv("EMAIL_TO")
+
+    # If secrets aren't set, just skip (useful for local testing)
+    if not all([host, user, password, to_addr]):
+        print("Email not configured; skipping email send.")
+        return
+
+    msg = MIMEText(body_text, "plain", "utf-8")
+    msg["From"] = user
+    msg["To"] = to_addr
+    msg["Subject"] = subject
+
+    with smtplib.SMTP(host, port, timeout=30) as server:
+        server.starttls()
+        server.login(user, password)
+        server.send_message(msg)
 
 
 def main():
@@ -203,6 +228,9 @@ def main():
 
     # Print report to logs
     print(md)
+    subject = f"S&P 500 Regime Report – {rep['regime']} – {rep['asof_utc'][:10]}"
+    send_email(subject, md)
+
 
 
 if __name__ == "__main__":
